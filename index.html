@@ -77,64 +77,10 @@
         <button class="btn btn-outline" onclick="window.location.href='leaderboard.html'">
           🏆 Leaderboard
         </button>
-        <button class="btn btn-outline" onclick="openModal('modal-login')">
-          🔑 เข้าสู่ระบบ
-        </button>
-        <button class="btn btn-gold" onclick="openModal('modal-register')">
-          ✨ สมัครสมาชิก
-        </button>
       </div>
 
       <div class="dark-toggle" onclick="toggleDark()" title="Dark Mode">
         <span id="dark-icon">🌙</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== MODAL LOGIN ===== -->
-  <div id="modal-login" class="modal-overlay" onclick="closeModalOutside(event,'modal-login')">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3>🔑 เข้าสู่ระบบ</h3>
-        <button class="modal-close" onclick="closeModal('modal-login')">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label>ชื่อผู้ใช้</label>
-          <input type="text" class="form-input" placeholder="กรอกชื่อผู้ใช้" />
-        </div>
-        <div class="form-group">
-          <label>รหัสผ่าน</label>
-          <input type="password" class="form-input" placeholder="กรอกรหัสผ่าน" />
-        </div>
-        <button class="btn btn-primary btn-block" onclick="closeModal('modal-login')">เข้าสู่ระบบ</button>
-        <p class="modal-switch">ยังไม่มีบัญชี? <a href="#" onclick="switchModal('modal-login','modal-register')">สมัครสมาชิก</a></p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== MODAL REGISTER ===== -->
-  <div id="modal-register" class="modal-overlay" onclick="closeModalOutside(event,'modal-register')">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3>✨ สมัครสมาชิก</h3>
-        <button class="modal-close" onclick="closeModal('modal-register')">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label>ชื่อผู้ใช้</label>
-          <input type="text" class="form-input" placeholder="ตั้งชื่อผู้ใช้" />
-        </div>
-        <div class="form-group">
-          <label>อีเมล</label>
-          <input type="email" class="form-input" placeholder="กรอกอีเมล" />
-        </div>
-        <div class="form-group">
-          <label>รหัสผ่าน</label>
-          <input type="password" class="form-input" placeholder="ตั้งรหัสผ่าน" />
-        </div>
-        <button class="btn btn-gold btn-block" onclick="closeModal('modal-register')">สมัครสมาชิก</button>
-        <p class="modal-switch">มีบัญชีแล้ว? <a href="#" onclick="switchModal('modal-register','modal-login')">เข้าสู่ระบบ</a></p>
       </div>
     </div>
   </div>
