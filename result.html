@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chinese Quest 🐉 - ผลลัพธ์</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Kanit:wght@300;400;600;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ===== RESULT PAGE ===== -->
+  <div id="page-result" class="page active">
+    <div class="result-bg">
+      <div class="confetti-wrap" id="confetti-wrap"></div>
+    </div>
+    <div class="result-card">
+      <div class="result-rank" id="result-rank">🥇</div>
+      <div class="result-rank-label" id="result-rank-label">Grand Master</div>
+      <div class="result-score-wrap">
+        <div class="result-score-label">คะแนนของคุณ</div>
+        <div class="result-score" id="result-score">0</div>
+        <div class="result-max">/ 2000</div>
+      </div>
+      <div class="result-stats">
+        <div class="result-stat">
+          <div class="result-stat-val" id="res-correct">0</div>
+          <div class="result-stat-label">✅ ถูก</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-val" id="res-wrong">0</div>
+          <div class="result-stat-label">❌ ผิด</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-val" id="res-streak">0</div>
+          <div class="result-stat-label">🔥 Streak</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-val" id="res-accuracy">0%</div>
+          <div class="result-stat-label">🎯 แม่น</div>
+        </div>
+      </div>
+      <div class="result-message" id="result-message">ยอดเยี่ยมมาก! คุณเก่งมาก!</div>
+      <div class="result-buttons">
+        <button class="btn btn-primary btn-lg" onclick="window.location.href='game.html'">🔄 เล่นอีกครั้ง</button>
+        <button class="btn btn-outline" onclick="window.location.href='leaderboard.html'">🏆 Leaderboard</button>
+        <button class="btn btn-outline" onclick="window.location.href='index.html'">🏠 หน้าแรก</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Dark mode
+    (function () {
+      if (localStorage.getItem('cq-dark') === '1') {
+        document.body.classList.add('dark');
+      }
+    })();
+
+    const RANKS = [
+      { min: 1800, emoji: "🐉", label: "Dragon Emperor",  msg: "สุดยอด!! คุณคือจักรพรรดิมังกร! 完美！" },
+      { min: 1400, emoji: "🥇", label: "Grand Master",    msg: "ยอดเยี่ยมมาก! คุณเก่งภาษาจีนมากจริงๆ!" },
+      { min: 1000, emoji: "🥈", label: "Scholar",          msg: "ดีมาก! กำลังพัฒนาขึ้นเรื่อยๆ 加油！" },
+      { min: 600,  emoji: "🥉", label: "Apprentice",       msg: "ไม่เลยนะ! ฝึกต่อไปแล้วจะเก่งขึ้นแน่นอน!" },
+      { min: 0,    emoji: "📚", label: "Beginner",         msg: "เริ่มต้นดี! อย่าท้อ ฝึกฝนต่อไปเลย 继续！" },
+    ];
+
+    function sfxVictory() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(freq, duration, delay) {
+          setTimeout(() => {
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.connect(g); g.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+            g.gain.setValueAtTime(0.35, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + duration);
+          }, delay);
+        }
+        [523, 659, 784, 1047, 1319].forEach((f, i) => playTone(f, 0.28, i * 110));
+      } catch (_) {}
+    }
+
+    function spawnConfetti() {
+      const wrap = document.getElementById('confetti-wrap');
+      wrap.innerHTML = '';
+      const colors = ['#D4AC0D','#C0392B','#FFFFFF','#F4D03F','#E74C3C','#F39C12','#8E44AD'];
+      for (let i = 0; i < 80; i++) {
+        const p = document.createElement('div');
+        p.className = 'confetti-piece';
+        p.style.cssText = `
+          left:${Math.random()*100}%;
+          background:${colors[Math.floor(Math.random()*colors.length)]};
+          width:${Math.random()*9+5}px;
+          height:${Math.random()*9+5}px;
+          animation-duration:${Math.random()*2.5+2}s;
+          animation-delay:${Math.random()*2}s;
+          border-radius:${Math.random()>.5?'50%':'3px'};
+        `;
+        wrap.appendChild(p);
+      }
+    }
+
+    // Load result data from sessionStorage
+    window.addEventListener('DOMContentLoaded', () => {
+      const data = JSON.parse(sessionStorage.getItem('cq-result') || '{}');
+      const score    = data.score    || 0;
+      const correct  = data.correct  || 0;
+      const wrong    = data.wrong    || 0;
+      const maxStreak= data.maxStreak|| 0;
+
+      const rank = RANKS.find(r => score >= r.min) || RANKS[RANKS.length - 1];
+      const accuracy = correct + wrong > 0 ? Math.round((correct / (correct + wrong)) * 100) : 0;
+
+      document.getElementById('result-rank').textContent       = rank.emoji;
+      document.getElementById('result-rank-label').textContent = rank.label;
+      document.getElementById('result-score').textContent      = score;
+      document.getElementById('res-correct').textContent       = correct;
+      document.getElementById('res-wrong').textContent         = wrong;
+      document.getElementById('res-streak').textContent        = maxStreak;
+      document.getElementById('res-accuracy').textContent      = accuracy + '%';
+      document.getElementById('result-message').textContent    = rank.msg;
+
+      spawnConfetti();
+      sfxVictory();
+    });
+  </script>
+</body>
+</html>

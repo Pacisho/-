@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chinese Quest 🐉 - Leaderboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Kanit:wght@300;400;600;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ===== LEADERBOARD PAGE ===== -->
+  <div id="page-leaderboard" class="page active">
+    <div class="lb-header">
+      <button class="btn-back" onclick="window.location.href='index.html'">← กลับ</button>
+      <h2 class="lb-title">🏆 Leaderboard</h2>
+      <div class="lb-subtitle">ผู้พิชิตภาษาจีน</div>
+    </div>
+    <div class="lb-podium">
+      <div class="podium-item podium-2">
+        <div class="podium-avatar">🐼</div>
+        <div class="podium-name">MingLi</div>
+        <div class="podium-score">8,450</div>
+        <div class="podium-block p2">2</div>
+      </div>
+      <div class="podium-item podium-1">
+        <div class="podium-crown">👑</div>
+        <div class="podium-avatar">🐲</div>
+        <div class="podium-name">DragonMaster</div>
+        <div class="podium-score">12,800</div>
+        <div class="podium-block p1">1</div>
+      </div>
+      <div class="podium-item podium-3">
+        <div class="podium-avatar">🦊</div>
+        <div class="podium-name">SakuraChan</div>
+        <div class="podium-score">7,200</div>
+        <div class="podium-block p3">3</div>
+      </div>
+    </div>
+    <div class="lb-list" id="lb-list">
+      <!-- rendered by JS -->
+    </div>
+    <div class="lb-footer">
+      <button class="btn btn-primary" onclick="window.location.href='game.html'">⚔️ เล่นเกม</button>
+    </div>
+  </div>
+
+  <script>
+    // Dark mode
+    (function () {
+      if (localStorage.getItem('cq-dark') === '1') {
+        document.body.classList.add('dark');
+      }
+    })();
+
+    const LEADERBOARD = [
+      { rank: 4,  avatar: "🐯", name: "TigerBoy",     score: 6800,  level: "⚡ Master",   badge: "🥈" },
+      { rank: 5,  avatar: "🐻", name: "PandaGirl",    score: 5500,  level: "📚 Scholar",  badge: "🎖️" },
+      { rank: 6,  avatar: "🦅", name: "EagleEye",     score: 4900,  level: "🌟 Advanced", badge: "🎖️" },
+      { rank: 7,  avatar: "🐋", name: "BluWhale88",   score: 4200,  level: "📖 Learner",  badge: "🏅" },
+      { rank: 8,  avatar: "🦁", name: "LionHeart",    score: 3800,  level: "📖 Learner",  badge: "🏅" },
+      { rank: 9,  avatar: "🐸", name: "Froggyyy",     score: 2900,  level: "🌱 Beginner", badge: "" },
+      { rank: 10, avatar: "🦊", name: "FoxTrot99",    score: 2100,  level: "🌱 Beginner", badge: "" },
+    ];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const list = document.getElementById('lb-list');
+      LEADERBOARD.forEach((e, i) => {
+        const row = document.createElement('div');
+        row.className = 'lb-row';
+        row.style.animationDelay = (i * 0.07) + 's';
+        row.innerHTML = `
+          <div class="lb-rank-num">${e.rank}</div>
+          <div class="lb-avatar">${e.avatar}</div>
+          <div class="lb-info">
+            <div class="lb-name">${e.name}</div>
+            <div class="lb-level">${e.level}</div>
+          </div>
+          <div class="lb-score">${e.score.toLocaleString()}</div>
+          <div class="lb-badge">${e.badge}</div>`;
+        list.appendChild(row);
+      });
+    });
+  </script>
+</body>
+</html>

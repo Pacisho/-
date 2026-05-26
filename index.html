@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chinese Quest 🐉</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Kanit:wght@300;400;600;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ===== HOME PAGE ===== -->
+  <div id="page-home" class="page active">
+    <div class="home-bg">
+      <div class="lantern lantern-1">🏮</div>
+      <div class="lantern lantern-2">🏮</div>
+      <div class="lantern lantern-3">🏮</div>
+      <div class="dragon-deco top-left">🐲</div>
+      <div class="dragon-deco bottom-right">🐉</div>
+      <div class="cloud cloud-1">☁️</div>
+      <div class="cloud cloud-2">☁️</div>
+    </div>
+
+    <div class="home-content">
+      <div class="logo-wrapper">
+        <div class="logo-chinese">中文</div>
+        <div class="logo-title">Chinese Quest</div>
+        <div class="logo-subtitle">เรียนรู้ภาษาจีนผ่านการผจญภัย</div>
+      </div>
+
+      <div class="home-stats">
+        <div class="stat-pill">🎓 คำศัพท์ 200+</div>
+        <div class="stat-pill">🏆 ระดับ 10 ด่าน</div>
+        <div class="stat-pill">👥 ผู้เล่น 5,000+</div>
+      </div>
+
+      <div class="home-buttons">
+        <button class="btn btn-primary btn-xl" onclick="window.location.href='game.html'">
+          <span class="btn-icon">⚔️</span> เริ่มเกม
+        </button>
+        <div class="home-secondary-btns">
+          <button class="btn btn-outline" onclick="window.location.href='leaderboard.html'">
+            🏆 Leaderboard
+          </button>
+        </div>
+      </div>
+
+      <div class="dark-toggle" onclick="toggleDark()" title="Dark Mode">
+        <span id="dark-icon">🌙</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Modal helpers
+    function openModal(id)  { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function closeModalOutside(e, id) { if (e.target.id === id) closeModal(id); }
+    function switchModal(cId, oId) {
+      closeModal(cId);
+      setTimeout(() => openModal(oId), 200);
+    }
+
+    // Dark mode
+    let isDark = false;
+    function toggleDark() {
+      isDark = !isDark;
+      document.body.classList.toggle('dark', isDark);
+      document.getElementById('dark-icon').textContent = isDark ? '☀️' : '🌙';
+      localStorage.setItem('cq-dark', isDark ? '1' : '0');
+    }
+    (function () {
+      if (localStorage.getItem('cq-dark') === '1') {
+        isDark = true;
+        document.body.classList.add('dark');
+        const icon = document.getElementById('dark-icon');
+        if (icon) icon.textContent = '☀️';
+      }
+    })();
+  </script>
+</body>
+</html>

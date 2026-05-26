@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chinese Quest 🐉 - เล่นเกม</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Kanit:wght@300;400;600;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ===== QUIZ PAGE ===== -->
+  <div id="page-quiz" class="page active">
+    <div class="quiz-header">
+      <button class="btn-back" onclick="window.location.href='index.html'">← กลับ</button>
+      <div class="quiz-meta">
+        <div class="lives-display" id="lives-display">❤️❤️❤️</div>
+        <div class="score-display">คะแนน: <span id="score-val">0</span></div>
+        <div class="timer-display" id="timer-wrap">⏱ <span id="timer-val">15</span>s</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <span class="progress-text" id="progress-text">1 / 20</span>
+    </div>
+
+    <div class="quiz-card" id="quiz-card">
+      <div class="question-badge" id="q-category">คำศัพท์พื้นฐาน</div>
+
+      <div class="chinese-speak-wrap">
+        <div class="question-chinese" id="q-chinese" onclick="speakChinese()" title="คลิกเพื่อฟังเสียง">你好</div>
+        <button class="speak-btn" id="speak-btn" onclick="speakChinese()" title="ฟังการออกเสียง">
+          <span class="speak-icon" id="speak-icon">🔊</span>
+          <span class="speak-label">ฟังเสียง</span>
+          <span class="speak-ripple" id="speak-ripple"></span>
+        </button>
+      </div>
+
+      <div class="pinyin-wrap">
+        <div class="question-pinyin" id="q-pinyin">nǐ hǎo</div>
+        <div class="tts-status" id="tts-status"></div>
+      </div>
+
+      <div class="question-text" id="q-text">คำนี้หมายความว่าอะไร?</div>
+
+      <div class="options-grid" id="options-grid">
+        <!-- options rendered by JS -->
+      </div>
+    </div>
+
+    <div class="quiz-footer">
+      <div class="streak-display" id="streak-display"></div>
+    </div>
+  </div>
+
+  <!-- ===== FEEDBACK OVERLAY ===== -->
+  <div id="feedback-overlay" class="feedback-overlay hidden">
+    <div class="feedback-content" id="feedback-content"></div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
