@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chinese Quest 🐉 - จับคู่คำ</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Kanit:wght@300;400;600;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="page-match" class="page active">
+    <div class="quiz-header">
+      <button class="btn-back" onclick="window.location.href='index.html'">← กลับ</button>
+      <div class="quiz-meta">
+        <div class="score-display">คะแนน: <span id="match-score">0</span></div>
+        <div class="timer-display" id="match-timer-wrap">⏱ <span id="match-timer">60</span>s</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:0.5rem 1rem 0;">
+      <div style="font-size:1.1rem;font-weight:600;color:var(--text-soft);">🔗 จับคู่คำจีนกับความหมาย</div>
+      <div id="match-round-label" style="font-size:0.85rem;color:var(--text-soft);margin-top:2px;">รอบที่ 1</div>
+    </div>
+
+    <div class="match-arena" id="match-arena">
+      <div class="match-col" id="col-chinese"></div>
+      <div class="match-col" id="col-thai"></div>
+    </div>
+
+    <div id="match-result-overlay" class="match-result-overlay hidden">
+      <div class="match-result-card">
+        <div id="match-final-emoji" style="font-size:3rem">🎉</div>
+        <div id="match-final-title" style="font-size:1.4rem;font-weight:700;margin:0.5rem 0;">ยอดเยี่ยม!</div>
+        <div id="match-final-score" style="font-size:2rem;font-weight:900;color:var(--gold)">0</div>
+        <div style="color:var(--text-soft);font-size:0.9rem;margin-bottom:1rem;">คะแนน</div>
+        <div class="result-buttons">
+          <button class="btn btn-primary" onclick="startMatch()">🔄 เล่นอีกครั้ง</button>
+          <button class="btn btn-outline" onclick="window.location.href='index.html'">🏠 หน้าแรก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){ if(localStorage.getItem('cq-dark')==='1') document.body.classList.add('dark'); })();
+
+    const WORDS = [
+      { chinese:"你好", thai:"สวัสดี" }, { chinese:"谢谢", thai:"ขอบคุณ" },
+      { chinese:"再见", thai:"ลาก่อน" }, { chinese:"对不起", thai:"ขอโทษ" },
+      { chinese:"没关系", thai:"ไม่เป็นไร" }, { chinese:"猫", thai:"แมว" },
+      { chinese:"狗", thai:"สุนัข" }, { chinese:"爱", thai:"รัก" },
+      { chinese:"美丽", thai:"สวยงาม" }, { chinese:"朋友", thai:"เพื่อน" },
+      { chinese:"老师", thai:"ครู" }, { chinese:"吃饭", thai:"กินข้าว" },
+      { chinese:"喝水", thai:"ดื่มน้ำ" }, { chinese:"睡觉", thai:"นอนหลับ" },
+      { chinese:"红色", thai:"สีแดง" }, { chinese:"蓝色", thai:"สีน้ำเงิน" },
+      { chinese:"黄色", thai:"สีเหลือง" }, { chinese:"大", thai:"ใหญ่" },
+      { chinese:"聪明", thai:"ฉลาด" }, { chinese:"高兴", thai:"ดีใจ" },
+    ];
+
+    let score=0, round=0, timer=null, timeLeft=60;
+    let selectedLeft=null, selectedRight=null;
+    let matched=0, totalPairs=0;
+
+    function shuffle(a){ return [...a].sort(()=>Math.random()-0.5); }
+
+    function startMatch(){
+      document.getElementById('match-result-overlay').classList.add('hidden');
+      score=0; round=0; timeLeft=60;
+      document.getElementById('match-score').textContent=0;
+      updateTimerDisplay();
+      clearInterval(timer);
+      timer=setInterval(()=>{
+        timeLeft--;
+        updateTimerDisplay();
+        if(timeLeft<=0){ clearInterval(timer); endMatch(); }
+      },1000);
+      loadRound();
+    }
+
+    function loadRound(){
+      round++;
+      document.getElementById('match-round-label').textContent='รอบที่ '+round;
+      selectedLeft=null; selectedRight=null; matched=0;
+
+      const pool = shuffle(WORDS).slice(0,6);
+      totalPairs = pool.length;
+      const leftItems  = shuffle(pool);
+      const rightItems = shuffle(pool);
+
+      const colC = document.getElementById('col-chinese');
+      const colT = document.getElementById('col-thai');
+      colC.innerHTML=''; colT.innerHTML='';
+
+      leftItems.forEach(w=>{
+        const btn=document.createElement('button');
+        btn.className='match-btn match-btn--chinese';
+        btn.textContent=w.chinese;
+        btn.dataset.key=w.chinese;
+        btn.onclick=()=>selectLeft(btn, w);
+        colC.appendChild(btn);
+      });
+      rightItems.forEach(w=>{
+        const btn=document.createElement('button');
+        btn.className='match-btn match-btn--thai';
+        btn.textContent=w.thai;
+        btn.dataset.key=w.chinese;
+        btn.onclick=()=>selectRight(btn, w);
+        colT.appendChild(btn);
+      });
+    }
+
+    function selectLeft(btn, word){
+      if(btn.disabled) return;
+      document.querySelectorAll('.match-btn--chinese').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedLeft={btn,word};
+      if(selectedRight) checkPair();
+    }
+    function selectRight(btn, word){
+      if(btn.disabled) return;
+      document.querySelectorAll('.match-btn--thai').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedRight={btn,word};
+      if(selectedLeft) checkPair();
+    }
+
+    function checkPair(){
+      const L=selectedLeft, R=selectedRight;
+      selectedLeft=null; selectedRight=null;
+      if(L.word.chinese===R.word.chinese){
+        L.btn.classList.remove('selected'); R.btn.classList.remove('selected');
+        L.btn.classList.add('matched'); R.btn.classList.add('matched');
+        L.btn.disabled=true; R.btn.disabled=true;
+        score+=50;
+        document.getElementById('match-score').textContent=score;
+        playTone(660,'sine',0.15);
+        matched++;
+        if(matched>=totalPairs){ setTimeout(loadRound,600); }
+      } else {
+        L.btn.classList.add('wrong-flash'); R.btn.classList.add('wrong-flash');
+        playTone(200,'sawtooth',0.1);
+        setTimeout(()=>{
+          L.btn.classList.remove('selected','wrong-flash');
+          R.btn.classList.remove('selected','wrong-flash');
+        },500);
+      }
+    }
+
+    function endMatch(){
+      document.getElementById('match-final-score').textContent=score;
+      const emoji = score>=500?'🐉':score>=300?'🥇':score>=150?'🥈':'📚';
+      const title = score>=500?'จักรพรรดิมังกร!':score>=300?'ยอดเยี่ยมมาก!':score>=150?'ดีมาก!':'ฝึกต่อไปนะ!';
+      document.getElementById('match-final-emoji').textContent=emoji;
+      document.getElementById('match-final-title').textContent=title;
+      document.getElementById('match-result-overlay').classList.remove('hidden');
+    }
+
+    function updateTimerDisplay(){
+      const el=document.getElementById('match-timer');
+      const wrap=document.getElementById('match-timer-wrap');
+      el.textContent=timeLeft;
+      wrap.classList.remove('warn','crit');
+      if(timeLeft<=10) wrap.classList.add('crit');
+      else if(timeLeft<=20) wrap.classList.add('warn');
+    }
+
+    let audioCtx=null;
+    function playTone(freq,type,dur){
+      try{
+        if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+        const osc=audioCtx.createOscillator(),g=audioCtx.createGain();
+        osc.connect(g);g.connect(audioCtx.destination);
+        osc.type=type;osc.frequency.setValueAtTime(freq,audioCtx.currentTime);
+        g.gain.setValueAtTime(0.3,audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+        osc.start(audioCtx.currentTime);osc.stop(audioCtx.currentTime+dur);
+      }catch(_){}
+    }
+
+    window.addEventListener('DOMContentLoaded', startMatch);
+  </script>
+</body>
+</html>

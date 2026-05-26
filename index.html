@@ -34,15 +34,55 @@
         <div class="stat-pill">👥 ผู้เล่น 5,000+</div>
       </div>
 
-      <div class="home-buttons">
-        <button class="btn btn-primary btn-xl" onclick="window.location.href='game.html'">
-          <span class="btn-icon">⚔️</span> เริ่มเกม
-        </button>
-        <div class="home-secondary-btns">
-          <button class="btn btn-outline" onclick="window.location.href='leaderboard.html'">
-            🏆 Leaderboard
-          </button>
+      <!-- ===== GAME SELECTION ===== -->
+      <div class="game-select-section">
+        <div class="game-select-title">เลือกโหมดเกม</div>
+        <div class="game-cards-grid">
+          <a href="game.html" class="game-card game-card--quiz">
+            <div class="game-card__icon">📝</div>
+            <div class="game-card__info">
+              <div class="game-card__name">ตอบคำถาม</div>
+              <div class="game-card__desc">เลือกความหมายที่ถูกต้อง 20 ข้อ</div>
+            </div>
+            <div class="game-card__badge">คลาสสิก</div>
+          </a>
+          <a href="match.html" class="game-card game-card--match">
+            <div class="game-card__icon">🔗</div>
+            <div class="game-card__info">
+              <div class="game-card__name">จับคู่คำ</div>
+              <div class="game-card__desc">เชื่อมคำจีนกับความหมายให้ตรง</div>
+            </div>
+            <div class="game-card__badge">ใหม่!</div>
+          </a>
+          <a href="memory.html" class="game-card game-card--memory">
+            <div class="game-card__icon">🃏</div>
+            <div class="game-card__info">
+              <div class="game-card__name">พลิกการ์ด</div>
+              <div class="game-card__desc">จำตำแหน่งคำและเปิดคู่ให้ครบ</div>
+            </div>
+            <div class="game-card__badge">ใหม่!</div>
+          </a>
+          <a href="falling.html" class="game-card game-card--falling">
+            <div class="game-card__icon">🌧️</div>
+            <div class="game-card__info">
+              <div class="game-card__name">คำตก</div>
+              <div class="game-card__desc">พิมพ์ pinyin ก่อนคำตกถึงพื้น</div>
+            </div>
+            <div class="game-card__badge">ใหม่!</div>
+          </a>
         </div>
+      </div>
+
+      <div class="home-secondary-btns" style="margin-top:1rem;">
+        <button class="btn btn-outline" onclick="window.location.href='leaderboard.html'">
+          🏆 Leaderboard
+        </button>
+        <button class="btn btn-outline" onclick="openModal('modal-login')">
+          🔑 เข้าสู่ระบบ
+        </button>
+        <button class="btn btn-gold" onclick="openModal('modal-register')">
+          ✨ สมัครสมาชิก
+        </button>
       </div>
 
       <div class="dark-toggle" onclick="toggleDark()" title="Dark Mode">
@@ -51,8 +91,55 @@
     </div>
   </div>
 
+  <!-- ===== MODAL LOGIN ===== -->
+  <div id="modal-login" class="modal-overlay" onclick="closeModalOutside(event,'modal-login')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🔑 เข้าสู่ระบบ</h3>
+        <button class="modal-close" onclick="closeModal('modal-login')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>ชื่อผู้ใช้</label>
+          <input type="text" class="form-input" placeholder="กรอกชื่อผู้ใช้" />
+        </div>
+        <div class="form-group">
+          <label>รหัสผ่าน</label>
+          <input type="password" class="form-input" placeholder="กรอกรหัสผ่าน" />
+        </div>
+        <button class="btn btn-primary btn-block" onclick="closeModal('modal-login')">เข้าสู่ระบบ</button>
+        <p class="modal-switch">ยังไม่มีบัญชี? <a href="#" onclick="switchModal('modal-login','modal-register')">สมัครสมาชิก</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL REGISTER ===== -->
+  <div id="modal-register" class="modal-overlay" onclick="closeModalOutside(event,'modal-register')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>✨ สมัครสมาชิก</h3>
+        <button class="modal-close" onclick="closeModal('modal-register')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>ชื่อผู้ใช้</label>
+          <input type="text" class="form-input" placeholder="ตั้งชื่อผู้ใช้" />
+        </div>
+        <div class="form-group">
+          <label>อีเมล</label>
+          <input type="email" class="form-input" placeholder="กรอกอีเมล" />
+        </div>
+        <div class="form-group">
+          <label>รหัสผ่าน</label>
+          <input type="password" class="form-input" placeholder="ตั้งรหัสผ่าน" />
+        </div>
+        <button class="btn btn-gold btn-block" onclick="closeModal('modal-register')">สมัครสมาชิก</button>
+        <p class="modal-switch">มีบัญชีแล้ว? <a href="#" onclick="switchModal('modal-register','modal-login')">เข้าสู่ระบบ</a></p>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Modal helpers
     function openModal(id)  { document.getElementById(id).classList.add('active'); }
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
     function closeModalOutside(e, id) { if (e.target.id === id) closeModal(id); }
@@ -60,8 +147,6 @@
       closeModal(cId);
       setTimeout(() => openModal(oId), 200);
     }
-
-    // Dark mode
     let isDark = false;
     function toggleDark() {
       isDark = !isDark;

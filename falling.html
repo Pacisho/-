@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chinese Quest 🐉 - คำตก</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Kanit:wght@300;400;600;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="page-falling" class="page active">
+    <div class="quiz-header">
+      <button class="btn-back" onclick="window.location.href='index.html'">← กลับ</button>
+      <div class="quiz-meta">
+        <div class="lives-display" id="fall-lives">❤️❤️❤️</div>
+        <div class="score-display">คะแนน: <span id="fall-score">0</span></div>
+        <div class="score-display">Lv.<span id="fall-level">1</span></div>
+      </div>
+    </div>
+
+    <div class="falling-arena" id="falling-arena">
+      <!-- falling words rendered here -->
+    </div>
+
+    <div class="falling-input-zone">
+      <div class="falling-options" id="falling-options">
+        <!-- option buttons rendered here -->
+      </div>
+    </div>
+
+    <div id="fall-result-overlay" class="match-result-overlay hidden">
+      <div class="match-result-card">
+        <div id="fall-final-emoji" style="font-size:3rem">🎉</div>
+        <div id="fall-final-title" style="font-size:1.3rem;font-weight:700;margin:0.5rem 0;"></div>
+        <div style="font-size:2.5rem;font-weight:900;color:var(--gold)" id="fall-final-score">0</div>
+        <div style="color:var(--text-soft);font-size:0.85rem;margin-bottom:1rem;">คะแนน</div>
+        <div class="result-buttons">
+          <button class="btn btn-primary" onclick="startFalling()">🔄 เล่นอีกครั้ง</button>
+          <button class="btn btn-outline" onclick="window.location.href='index.html'">🏠 หน้าแรก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){ if(localStorage.getItem('cq-dark')==='1') document.body.classList.add('dark'); })();
+
+    const VOCAB = [
+      {chinese:"你好",thai:"สวัสดี"},{chinese:"谢谢",thai:"ขอบคุณ"},
+      {chinese:"再见",thai:"ลาก่อน"},{chinese:"对不起",thai:"ขอโทษ"},
+      {chinese:"猫",thai:"แมว"},{chinese:"狗",thai:"สุนัข"},
+      {chinese:"爱",thai:"รัก"},{chinese:"朋友",thai:"เพื่อน"},
+      {chinese:"吃饭",thai:"กินข้าว"},{chinese:"红色",thai:"สีแดง"},
+      {chinese:"大",thai:"ใหญ่"},{chinese:"聪明",thai:"ฉลาด"},
+      {chinese:"老师",thai:"ครู"},{chinese:"美丽",thai:"สวยงาม"},
+      {chinese:"高兴",thai:"ดีใจ"},{chinese:"睡觉",thai:"นอนหลับ"},
+      {chinese:"喝水",thai:"ดื่มน้ำ"},{chinese:"黄色",thai:"สีเหลือง"},
+      {chinese:"蓝色",thai:"สีน้ำเงิน"},{chinese:"没关系",thai:"ไม่เป็นไร"},
+    ];
+
+    let score=0, lives=3, level=1, gameInterval=null, fallingWords=[];
+    let currentWord=null, spawnTimer=null, gameActive=false;
+    let wordsAnswered=0;
+
+    function shuffle(a){return [...a].sort(()=>Math.random()-0.5);}
+
+    function startFalling(){
+      document.getElementById('fall-result-overlay').classList.add('hidden');
+      score=0; lives=3; level=1; wordsAnswered=0;
+      fallingWords=[];
+      gameActive=true;
+      updateHUD();
+      document.getElementById('falling-arena').innerHTML='';
+      clearInterval(gameInterval);
+      clearTimeout(spawnTimer);
+      spawnWord();
+      gameInterval=setInterval(tickFall, 50);
+    }
+
+    function getSpeed(){ return 0.18 + level*0.04; }
+    function getSpawnDelay(){ return Math.max(1200, 3000 - level*200); }
+
+    function spawnWord(){
+      if(!gameActive) return;
+      const arena=document.getElementById('falling-arena');
+      const arenaH=arena.clientHeight||300;
+      const word=shuffle(VOCAB)[Math.floor(Math.random()*VOCAB.length)];
+      currentWord=word;
+
+      const el=document.createElement('div');
+      el.className='falling-word';
+      el.textContent=word.chinese;
+      el.style.left=Math.random()*70+5+'%';
+      el.style.top='0%';
+      el.dataset.pct='0';
+      arena.appendChild(el);
+      fallingWords.push({el, word, pct:0});
+
+      renderOptions(word);
+      spawnTimer=setTimeout(spawnWord, getSpawnDelay());
+    }
+
+    function tickFall(){
+      const arena=document.getElementById('falling-arena');
+      const toRemove=[];
+      fallingWords.forEach((fw,i)=>{
+        fw.pct+=getSpeed();
+        fw.el.style.top=fw.pct+'%';
+        if(fw.pct>=92){
+          fw.el.remove();
+          toRemove.push(i);
+          lives=Math.max(0,lives-1);
+          updateHUD();
+          playTone(200,'sawtooth',0.12);
+          if(lives<=0){ endFalling(); }
+        }
+      });
+      toRemove.reverse().forEach(i=>fallingWords.splice(i,1));
+    }
+
+    function renderOptions(word){
+      const others=shuffle(VOCAB.filter(v=>v.chinese!==word.chinese)).slice(0,3);
+      const opts=shuffle([word,...others]);
+      const container=document.getElementById('falling-options');
+      container.innerHTML='';
+      opts.forEach(o=>{
+        const btn=document.createElement('button');
+        btn.className='falling-opt-btn';
+        btn.textContent=o.thai;
+        btn.onclick=()=>answerFalling(o, word);
+        container.appendChild(btn);
+      });
+    }
+
+    function answerFalling(chosen, target){
+      if(!gameActive||fallingWords.length===0) return;
+      const fw=fallingWords[0];
+      if(!fw) return;
+      if(chosen.chinese===target.chinese){
+        fw.el.classList.add('fall-hit');
+        setTimeout(()=>{ fw.el.remove(); fallingWords.shift(); },300);
+        score+=100+level*10;
+        wordsAnswered++;
+        if(wordsAnswered%5===0){ level++; }
+        updateHUD();
+        playTone(660,'sine',0.12);
+        renderOptions(fallingWords[0]?.word || shuffle(VOCAB)[0]);
+      } else {
+        fw.el.classList.add('fall-wrong-flash');
+        setTimeout(()=>fw.el.classList.remove('fall-wrong-flash'),300);
+        playTone(220,'sawtooth',0.08);
+      }
+    }
+
+    function endFalling(){
+      gameActive=false;
+      clearInterval(gameInterval);
+      clearTimeout(spawnTimer);
+      const emoji=score>=1500?'🐉':score>=800?'🥇':score>=400?'🥈':'📚';
+      const title=score>=1500?'จักรพรรดิมังกร!':score>=800?'ยอดเยี่ยม!':score>=400?'ดีมาก!':'ฝึกต่อไปนะ!';
+      document.getElementById('fall-final-emoji').textContent=emoji;
+      document.getElementById('fall-final-title').textContent=title;
+      document.getElementById('fall-final-score').textContent=score;
+      document.getElementById('fall-result-overlay').classList.remove('hidden');
+    }
+
+    function updateHUD(){
+      let d='';
+      for(let i=0;i<3;i++) d+=i<lives?'❤️':'🖤';
+      document.getElementById('fall-lives').textContent=d;
+      document.getElementById('fall-score').textContent=score;
+      document.getElementById('fall-level').textContent=level;
+    }
+
+    let audioCtx=null;
+    function playTone(freq,type,dur){
+      try{
+        if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+        const osc=audioCtx.createOscillator(),g=audioCtx.createGain();
+        osc.connect(g);g.connect(audioCtx.destination);
+        osc.type=type;osc.frequency.setValueAtTime(freq,audioCtx.currentTime);
+        g.gain.setValueAtTime(0.3,audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+        osc.start(audioCtx.currentTime);osc.stop(audioCtx.currentTime+dur);
+      }catch(_){}
+    }
+
+    window.addEventListener('DOMContentLoaded', startFalling);
+  </script>
+</body>
+</html>

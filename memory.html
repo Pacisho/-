@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chinese Quest 🐉 - พลิกการ์ด</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Kanit:wght@300;400;600;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="page-memory" class="page active">
+    <div class="quiz-header">
+      <button class="btn-back" onclick="window.location.href='index.html'">← กลับ</button>
+      <div class="quiz-meta">
+        <div class="score-display">คู่: <span id="mem-pairs">0</span>/<span id="mem-total">8</span></div>
+        <div class="score-display">พลิก: <span id="mem-flips">0</span></div>
+        <div class="timer-display">⏱ <span id="mem-timer">0</span>s</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:0.4rem 1rem 0;">
+      <div style="font-size:1rem;font-weight:600;color:var(--text-soft);">🃏 เปิดการ์ดหาคู่จีน–ไทย</div>
+    </div>
+
+    <div class="memory-grid" id="memory-grid"></div>
+
+    <div id="mem-result-overlay" class="match-result-overlay hidden">
+      <div class="match-result-card">
+        <div id="mem-final-emoji" style="font-size:3rem">🎉</div>
+        <div id="mem-final-title" style="font-size:1.3rem;font-weight:700;margin:0.5rem 0;"></div>
+        <div style="display:flex;gap:1.5rem;justify-content:center;margin-bottom:1rem;">
+          <div style="text-align:center"><div style="font-size:1.8rem;font-weight:900;color:var(--gold)" id="mem-res-time">0</div><div style="font-size:0.8rem;color:var(--text-soft)">วินาที</div></div>
+          <div style="text-align:center"><div style="font-size:1.8rem;font-weight:900;color:var(--red)" id="mem-res-flips">0</div><div style="font-size:0.8rem;color:var(--text-soft)">ครั้งที่พลิก</div></div>
+          <div style="text-align:center"><div style="font-size:1.8rem;font-weight:900;color:var(--correct)" id="mem-res-score">0</div><div style="font-size:0.8rem;color:var(--text-soft)">คะแนน</div></div>
+        </div>
+        <div class="result-buttons">
+          <button class="btn btn-primary" onclick="startMemory()">🔄 เล่นอีกครั้ง</button>
+          <button class="btn btn-outline" onclick="window.location.href='index.html'">🏠 หน้าแรก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){ if(localStorage.getItem('cq-dark')==='1') document.body.classList.add('dark'); })();
+
+    const PAIRS = [
+      {chinese:"你好",thai:"สวัสดี"},{chinese:"谢谢",thai:"ขอบคุณ"},
+      {chinese:"再见",thai:"ลาก่อน"},{chinese:"对不起",thai:"ขอโทษ"},
+      {chinese:"猫",thai:"แมว"},{chinese:"狗",thai:"สุนัข"},
+      {chinese:"爱",thai:"รัก"},{chinese:"朋友",thai:"เพื่อน"},
+      {chinese:"吃饭",thai:"กินข้าว"},{chinese:"红色",thai:"สีแดง"},
+      {chinese:"大",thai:"ใหญ่"},{chinese:"聪明",thai:"ฉลาด"},
+    ];
+
+    let flipped=[], matched=0, flips=0, startTime=null, timerInterval=null, canFlip=true;
+    const PAIRS_COUNT=8;
+
+    function shuffle(a){return [...a].sort(()=>Math.random()-0.5);}
+
+    function startMemory(){
+      document.getElementById('mem-result-overlay').classList.add('hidden');
+      flipped=[]; matched=0; flips=0; canFlip=true;
+      clearInterval(timerInterval); startTime=Date.now();
+      timerInterval=setInterval(()=>{
+        document.getElementById('mem-timer').textContent=Math.floor((Date.now()-startTime)/1000);
+      },500);
+      document.getElementById('mem-flips').textContent='0';
+      document.getElementById('mem-pairs').textContent='0';
+
+      const pool = shuffle(PAIRS).slice(0,PAIRS_COUNT);
+      document.getElementById('mem-total').textContent=PAIRS_COUNT;
+
+      const cards=[];
+      pool.forEach((p,i)=>{
+        cards.push({id:i*2,   pairId:i, text:p.chinese, isChinese:true,  pair:p});
+        cards.push({id:i*2+1, pairId:i, text:p.thai,    isChinese:false, pair:p});
+      });
+      const shuffled=shuffle(cards);
+
+      const grid=document.getElementById('memory-grid');
+      grid.innerHTML='';
+      shuffled.forEach(c=>{
+        const card=document.createElement('div');
+        card.className='mem-card';
+        card.dataset.pairid=c.pairId;
+        card.dataset.id=c.id;
+        card.innerHTML=`
+          <div class="mem-card-inner">
+            <div class="mem-card-front">🐉</div>
+            <div class="mem-card-back ${c.isChinese?'mem-chinese':'mem-thai'}">${c.text}</div>
+          </div>`;
+        card.onclick=()=>flipCard(card, c);
+        grid.appendChild(card);
+      });
+    }
+
+    function flipCard(card, data){
+      if(!canFlip || card.classList.contains('flipped') || card.classList.contains('mem-matched')) return;
+      card.classList.add('flipped');
+      flips++;
+      document.getElementById('mem-flips').textContent=flips;
+      flipped.push({card, data});
+
+      if(flipped.length===2){
+        canFlip=false;
+        const [a,b]=flipped;
+        if(a.data.pairId===b.data.pairId && a.data.id!==b.data.id){
+          a.card.classList.add('mem-matched'); b.card.classList.add('mem-matched');
+          matched++;
+          document.getElementById('mem-pairs').textContent=matched;
+          playTone(660,'sine',0.15);
+          flipped=[];
+          canFlip=true;
+          if(matched>=PAIRS_COUNT) setTimeout(endMemory,500);
+        } else {
+          playTone(200,'sawtooth',0.1);
+          setTimeout(()=>{
+            a.card.classList.remove('flipped'); b.card.classList.remove('flipped');
+            flipped=[]; canFlip=true;
+          },900);
+        }
+      }
+    }
+
+    function endMemory(){
+      clearInterval(timerInterval);
+      const elapsed=Math.floor((Date.now()-startTime)/1000);
+      const score=Math.max(0, 800 - flips*10 - elapsed*2);
+      document.getElementById('mem-res-time').textContent=elapsed;
+      document.getElementById('mem-res-flips').textContent=flips;
+      document.getElementById('mem-res-score').textContent=score;
+      const emoji = flips<=PAIRS_COUNT*2?'🐉':flips<=PAIRS_COUNT*3?'🥇':'📚';
+      const title = flips<=PAIRS_COUNT*2?'ความจำเยี่ยมมาก!':flips<=PAIRS_COUNT*3?'ทำได้ดีมาก!':'ฝึกต่อไปนะ!';
+      document.getElementById('mem-final-emoji').textContent=emoji;
+      document.getElementById('mem-final-title').textContent=title;
+      document.getElementById('mem-result-overlay').classList.remove('hidden');
+    }
+
+    let audioCtx=null;
+    function playTone(freq,type,dur){
+      try{
+        if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+        const osc=audioCtx.createOscillator(),g=audioCtx.createGain();
+        osc.connect(g);g.connect(audioCtx.destination);
+        osc.type=type;osc.frequency.setValueAtTime(freq,audioCtx.currentTime);
+        g.gain.setValueAtTime(0.3,audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+        osc.start(audioCtx.currentTime);osc.stop(audioCtx.currentTime+dur);
+      }catch(_){}
+    }
+
+    window.addEventListener('DOMContentLoaded', startMemory);
+  </script>
+</body>
+</html>
